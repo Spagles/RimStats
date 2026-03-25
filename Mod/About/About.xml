@@ -18,7 +18,7 @@
         - Automated data export to /Analytics/db/rimstats.db.
         - Designed for integration with external Python-based dashboards.
     </description>
-    <modsDependencies>
+    <modDependencies>
         <li>
             <packageId>brrainz.harmony</packageId>
             <displayName>Lib: Harmony</displayName>
@@ -27,7 +27,7 @@
             <packageId>unlimitedhugs.hugslib</packageId>
             <displayName>HugsLib</displayName>
         </li>
-    </modsDependencies>
+    </modDependencies>
     <loadAfter>
         <li>brrainz.harmony</li>
         <li>unlimitedhugs.hugslib</li>
