@@ -1,0 +1,37 @@
+# .NET and C# build artifacts
+[Bb]in/
+[Ob]j/
+*.user
+*.userosscache
+*.sln.docstates
+
+# RimWorld specific build output
+# We ignore the DLL in Mod/Assemblies because it is generated from Source/
+Mod/Assemblies/*.dll
+Mod/Assemblies/*.pdb
+
+# Python environment and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
+.pytest_cache/
+
+# SQLite database files
+# Keeps the repository clean of personal save data
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# IDE and Operating System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
