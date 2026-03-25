@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModMetaData>
+    <name>RimStats</name>
+    <author>Progme</author>
+    <packageId>progme.rimstats</packageId>
+    <supportedVersions>
+        <li>1.5</li>
+        <li>1.6</li>
+    </supportedVersions>
+    <description>
+        A high-performance data analytics framework for RimWorld.
+
+        RimStats automatically tracks colony metrics, pawn lifespans, and economic trends, storing them in a local SQLite database for external analysis.
+
+        Key Features:
+        - Real-time event logging (Deaths, Raids, Harvests).
+        - Detailed pawn demographics tracking.
+        - Automated data export to /Analytics/db/rimstats.db.
+        - Designed for integration with external Python-based dashboards.
+    </description>
+    <modsDependencies>
+        <li>
+            <packageId>brrainz.harmony</packageId>
+            <displayName>Lib: Harmony</displayName>
+        </li>
+        <li>
+            <packageId>unlimitedhugs.hugslib</packageId>
+            <displayName>HugsLib</displayName>
+        </li>
+    </modsDependencies>
+    <loadAfter>
+        <li>brrainz.harmony</li>
+        <li>unlimitedhugs.hugslib</li>
+    </loadAfter>
+</ModMetaData>
