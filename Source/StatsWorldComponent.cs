@@ -1,8 +1,7 @@
 using RimWorld.Planet;
 using Verse;
 using System;
-using System.Collections;
-using System.IO;
+using RimWorld;
 
 namespace RimStats {
     public class StatsWorldComponent : WorldComponent {
@@ -12,22 +11,22 @@ namespace RimStats {
         {
             base.WorldComponentTick();
 
-            if (Find.TickManager.TicksGame % 60_000 == 0) RegisterData();
+            if (Find.TickManager.TicksGame % 10_000 == 0) RegisterData();
         }
 
         private void RegisterData() {
             Map map = Find.AnyPlayerHomeMap;
 
             if (map == null) return;
-            if (Scribe.loader == null || Scribe.loader.curPathRelToParent.NullOrEmpty()) return;
 
-            string saveName = Path.GetFileNameWithoutExtension(Scribe.loader.curPathRelToParent);
+            int randSeed = Find.World.ConstantRandSeed;
+            string factionName = Faction.OfPlayer.Name;
             float wealth = map.wealthWatcher.WealthTotal;
             int colonists = map.mapPawns.ColonistCount;
             int tick = Find.TickManager.TicksGame;
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            StatsData statsData = new StatsData(saveName, wealth, colonists, tick, timestamp);
+            StatsData statsData = new StatsData(randSeed, factionName, wealth, colonists, tick, timestamp);
             DataBaseManager.InsertData(statsData);
         }
     }

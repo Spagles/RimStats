@@ -13,13 +13,15 @@ using System.Linq;
 
 namespace RimStats {
     public class StatsData {
-        public readonly string saveName;
+        public readonly int randSeed;
+        public readonly string factionName;
         public readonly float wealth;
         public readonly int colonists;
         public readonly int tick;
         public readonly string timestamp;
-        public StatsData(string saveName, float wealth, int colonists, int tick, string timestamp) {
-            this.saveName = saveName;
+        public StatsData(int randSeed, string factionName, float wealth, int colonists, int tick, string timestamp) {
+            this.factionName = factionName;
+            this.randSeed = randSeed;
             this.wealth = wealth;
             this.colonists = colonists;
             this.tick = tick;
@@ -102,7 +104,7 @@ namespace RimStats {
 
         public static string GetCreateTableQuery<DataType>(string tableName) where DataType : class {
             FieldInfo[] fields = typeof(DataType).GetFields(BindingFlags.Public | BindingFlags.Instance);
-            List<string> columns = new List<string>{"Id INTEGER PRIMARY KEY AUTOINCREMENT"};
+            List<string> columns = new List<string>{"id INTEGER PRIMARY KEY AUTOINCREMENT"};
 
             foreach (FieldInfo field in fields) {
                 string columnName = field.Name;
