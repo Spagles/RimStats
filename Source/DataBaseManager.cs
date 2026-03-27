@@ -82,7 +82,8 @@ namespace RimStats {
             }
 
             raw.SetProvider(new SQLite3Provider_e_sqlite3());
-            Log.Message($"[RimStats] SQLite DLL successfully bound from: {binPath}");
+
+            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] SQLite DLL successfully bound from: {binPath}");
         }
 
         public static void Initialize() {
@@ -95,7 +96,7 @@ namespace RimStats {
                     
                     command.ExecuteNonQuery();
                 }
-            Log.Message($"[RimStats] Database initialized at {path}");
+            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Database initialized at {path}");
             }
             catch (Exception exception) {
                 Log.Error($"[RimStats] Error while initializing the database. {exception.Message}");
@@ -158,7 +159,7 @@ namespace RimStats {
                 Log.Error($"[RimStats] Database Insert Error : {exception.Message}");
             }
 
-            Log.Message("[RimStats] Data successfully inserted");
+            if (RimStatsMod.settings.logEnabled) Log.Message("[RimStats] Data successfully inserted");
         }
     }
 

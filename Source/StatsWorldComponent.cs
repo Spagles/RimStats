@@ -2,6 +2,7 @@ using RimWorld.Planet;
 using Verse;
 using System;
 using RimWorld;
+using UnityEngine;
 
 namespace RimStats {
     public class StatsWorldComponent : WorldComponent {
@@ -11,7 +12,8 @@ namespace RimStats {
         {
             base.WorldComponentTick();
 
-            if (Find.TickManager.TicksGame % 10_000 == 0) RegisterData();
+            int invervalTicks = (int) (RimStatsMod.settings.statsRegisterIntervalDays * 60_000f);
+            if (Find.TickManager.TicksGame % invervalTicks == 0) RegisterData();
         }
 
         private void RegisterData() {
