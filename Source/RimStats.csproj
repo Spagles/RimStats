@@ -1,29 +1,53 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
+    
+    <!--
+    <GamePath Condition="'$(RIMWORLD_PATH)' != ''">$(RIMWORLD_PATH)</GamePath>
+    <GamePath Condition="'$(RIMWORLD_PATH)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</GamePath>
+    -->
+    <GamePath>/mnt/win_c/Program Files (x86)/Steam/steamapps/common/RimWorld</GamePath>
+
     <OutputType>Library</OutputType>
-    <OutputPath>../Mod/Assemblies/</OutputPath>
+    <OutputPath>$(ProjectDir)../Mod/Assemblies</OutputPath>
+
+    <AssembliesPath>$(ProjectDir)../Mod/Assemblies</AssembliesPath>
+    <BinPath>$(ProjectDir)../Mod/Bin</BinPath>
+
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <RimWorldPath>/mnt/win_c/Program Files (x86)/Steam/steamapps/common/RimWorld</RimWorldPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(RimWorldPath)/RimWorldWin64_Data/Managed/Assembly-CSharp.dll</HintPath>
+      <HintPath>$(GamePath)/RimWorldWin64_Data/Managed/Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(RimWorldPath)/RimWorldWin64_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(GamePath)/RimWorldWin64_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>$(RimWorldPath)/Mods/2009463077/Current/Assemblies/0Harmony.dll</HintPath>
+      <HintPath>$(GamePath)/Mods/2009463077/Current/Assemblies/0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.0" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
+  <Target Name="DeployAssemblies" AfterTargets="Build">
+    <ItemGroup>
+      <SqliteLibs Include="$(AssembliesPath)/e_sqlite3.dll; $(AssembliesPath)/libe_sqlite3.so; $(AssembliesPath)/libe_sqlite3.dylib" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(SqliteLibs)"
+      DestinationFolder="$(BinPath)"
+      Condition="Exists('%(FullPath)')"
+      OverwriteReadOnlyFiles="true" />
+
+    <Delete 
+      Files="@(SqliteLibs)" 
+      Condition="Exists('%(FullPath)') AND Exists('$(BinPath)/%(Filename)%(Extension)')" />
+  </Target>
 </Project>
