@@ -1,4 +1,3 @@
-using UnityEngine;
 using Verse;
 
 namespace RimStats {
@@ -13,5 +12,7 @@ namespace RimStats {
             Scribe_Values.Look(ref statsRegisterIntervalDays, "statsRegisterIntervalDays");
             Scribe_Values.Look(ref logEnabled, "logEnabled");
         }
+
+
     }
 }

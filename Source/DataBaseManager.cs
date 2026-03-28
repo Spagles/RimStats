@@ -12,20 +12,13 @@ using System.Linq;
 // /home/progme/.portproton/data/prefixes/DOTNET/drive_c/users/steamuser/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config/RimStats
 
 namespace RimStats {
-    public class StatsData {
-        public readonly int randSeed;
-        public readonly string factionName;
-        public readonly float wealth;
-        public readonly int colonists;
-        public readonly int tick;
-        public readonly string timestamp;
-        public StatsData(int randSeed, string factionName, float wealth, int colonists, int tick, string timestamp) {
-            this.factionName = factionName;
+    public abstract class BaseData {
+        public int randSeed;
+        public int tick;
+        
+        protected BaseData(int randSeed, int tick) {
             this.randSeed = randSeed;
-            this.wealth = wealth;
-            this.colonists = colonists;
             this.tick = tick;
-            this.timestamp = timestamp;
         }
 
         public Dictionary<string, object> ToDictionary() {
@@ -37,6 +30,32 @@ namespace RimStats {
             }
 
             return dict;
+        }
+    }
+    public class EventData : BaseData {
+        public readonly string eventType;
+        public readonly string eventLabel;
+        public readonly string importance;
+        public readonly string details;
+
+        public EventData(int randSeed, int tick, string eventType, string importance, string eventLabel, string details) : base(randSeed, tick) {
+            this.eventLabel = eventLabel;
+            this.eventType = eventType;
+            this.importance = importance;
+            this.details = details;
+        }
+    }
+
+    public class StatsData : BaseData {
+        public readonly string factionName;
+        public readonly float wealth;
+        public readonly int colonists;
+        public readonly string timestamp;
+        public StatsData(int randSeed, int tick, string factionName, float wealth, int colonists, string timestamp) : base(randSeed, tick) {
+            this.factionName = factionName;
+            this.wealth = wealth;
+            this.colonists = colonists;
+            this.timestamp = timestamp;
         }
     }
 
@@ -68,6 +87,79 @@ namespace RimStats {
             }
         }
 
+        public static void Initialize() {
+            try {
+                BindBinaires();
+
+                InitializeTable<EventData>("Events");
+                InitializeTable<StatsData>("Stats");
+
+                if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Database successfully initialized");
+            }
+            catch (Exception exception) {
+                Log.Error($"[RimStats] Error while initializing the database. {exception.Message}");
+            }
+        }
+
+        public static void InitializeTable<T>(string tableName) where T : BaseData {
+            using (SqliteConnection connection = new SqliteConnection(connectionString)) {
+                connection.Open();
+                SqliteCommand command = connection.CreateCommand();
+
+                FieldInfo[] fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance);
+                List<string> columns = new List<string>{"id INTEGER PRIMARY KEY AUTOINCREMENT"};
+
+                foreach (FieldInfo field in fields) {
+                    string columnName = field.Name;
+                    string sqlType = GetSqlType(field.FieldType);
+
+                    columns.Add($"{columnName} {sqlType}");   
+                }
+
+                command.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
+                
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public static void InsertData<T>(T data, string tableName) where T : BaseData {
+            try {
+                // Create directory if it doesn't exist
+                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+
+                using (SqliteConnection connection = new SqliteConnection(connectionString)) {
+                    connection.Open();
+                    SqliteCommand command = connection.CreateCommand();
+
+                    Dictionary<string, object> dataDict = data.ToDictionary();
+
+                    string columns = string.Join(", ", dataDict.Keys);
+                    string values = string.Join(", ", dataDict.Keys.Select(k => "$" + k));
+
+                    // Add text to command
+                    command.CommandText = $"INSERT INTO {tableName} ({columns}) VALUES ({values})";
+
+                    // Anti-SQL injection
+                    foreach (var entry in dataDict) {
+                        command.Parameters.AddWithValue("$" + entry.Key, entry.Value ?? DBNull.Value);
+                    }
+
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception exception) {
+                Log.Error($"[RimStats] Database Insert Error. {exception.Message}");
+            }
+
+            if (RimStatsMod.settings.logEnabled) Log.Message("[RimStats] Data successfully inserted");
+        }
+
+        private static string GetSqlType(Type t) {
+            if (t == typeof(int) || t == typeof(long)) return "INTEGER";
+            if (t == typeof(float) || t == typeof(double)) return "REAL";
+            return "TEXT";
+        }
+
         private static void BindBinaires() {
             ModMetaData mod = ModLister.GetModWithIdentifier("progme.rimstats");
             if (mod == null) return;
@@ -84,82 +176,6 @@ namespace RimStats {
             raw.SetProvider(new SQLite3Provider_e_sqlite3());
 
             if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] SQLite DLL successfully bound from: {binPath}");
-        }
-
-        public static void Initialize() {
-            try {
-                using (SqliteConnection connection = new SqliteConnection(connectionString)) {
-                    connection.Open();
-                    SqliteCommand command = connection.CreateCommand();
-
-                    command.CommandText = GetCreateTableQuery<StatsData>(tableName : "Stats");
-                    
-                    command.ExecuteNonQuery();
-                }
-            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Database initialized at {path}");
-            }
-            catch (Exception exception) {
-                Log.Error($"[RimStats] Error while initializing the database. {exception.Message}");
-            }
-        }
-
-        public static string GetCreateTableQuery<DataType>(string tableName) where DataType : class {
-            FieldInfo[] fields = typeof(DataType).GetFields(BindingFlags.Public | BindingFlags.Instance);
-            List<string> columns = new List<string>{"id INTEGER PRIMARY KEY AUTOINCREMENT"};
-
-            foreach (FieldInfo field in fields) {
-                string columnName = field.Name;
-                string sqlType = "TEXT";
-
-                switch (field.FieldType) {
-                    case Type t when t == typeof(int) || t == typeof(long) || t == typeof(short):
-                        sqlType = "INTEGER";
-                        break;
-                    case Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal):
-                        sqlType = "REAL";
-                        break;
-                    case Type t when t == typeof(bool):
-                        sqlType = "INTEGER";
-                        break;
-                }
-
-                columns.Add($"{columnName} {sqlType}");   
-            }
-
-            string query = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
-            return query;
-        }
-
-        public static void InsertData(StatsData data) {
-            try {
-                // Create directory if it doesn't exist
-                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-
-                using (SqliteConnection connection = new SqliteConnection(connectionString)) {
-                    connection.Open();
-                    SqliteCommand command = connection.CreateCommand();
-
-                    Dictionary<string, object> dataDict = data.ToDictionary();
-
-                    string columns = string.Join(", ", dataDict.Keys);
-                    string values = string.Join(", ", dataDict.Keys.Select(k => "$" + k));
-
-                    // Add text to command
-                    command.CommandText = $"INSERT INTO Stats ({columns}) VALUES ({values})";
-
-                    // Anti-SQL injection
-                    foreach (var entry in dataDict) {
-                        command.Parameters.AddWithValue("$" + entry.Key, entry.Value ?? DBNull.Value);
-                    }
-
-                    command.ExecuteNonQuery();
-                }
-            }
-            catch (Exception exception) {
-                Log.Error($"[RimStats] Database Insert Error : {exception.Message}");
-            }
-
-            if (RimStatsMod.settings.logEnabled) Log.Message("[RimStats] Data successfully inserted");
         }
     }
 

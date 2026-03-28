@@ -1,6 +1,6 @@
+using HarmonyLib;
 using UnityEngine;
 using Verse;
-using System.Collections.Generic;
 
 namespace RimStats {
     public class RimStatsMod : Mod {
@@ -8,6 +8,11 @@ namespace RimStats {
 
         public RimStatsMod(ModContentPack content) : base(content) {
             settings = GetSettings<RimStatsSettings>();
+
+            Harmony harmony = new Harmony("Progme.RimStats");
+            harmony.PatchAll();
+
+            if (settings.logEnabled) Log.Message("[RimStats] Harmony successfuly patched original game");
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

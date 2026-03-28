@@ -2,7 +2,6 @@ using RimWorld.Planet;
 using Verse;
 using System;
 using RimWorld;
-using UnityEngine;
 
 namespace RimStats {
     public class StatsWorldComponent : WorldComponent {
@@ -28,8 +27,8 @@ namespace RimStats {
             int tick = Find.TickManager.TicksGame;
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            StatsData statsData = new StatsData(randSeed, factionName, wealth, colonists, tick, timestamp);
-            DataBaseManager.InsertData(statsData);
+            StatsData statsData = new StatsData(randSeed, tick, factionName, wealth, colonists, timestamp);
+            DataBaseManager.InsertData(statsData, "Stats");
         }
     }
 }
