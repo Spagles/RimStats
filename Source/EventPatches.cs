@@ -1,9 +1,6 @@
 using Verse;
 using HarmonyLib;
-using UnityEngine;
 using RimWorld;
-using System.Diagnostics;
-using RimWorld.BaseGen;
 
 namespace RimStats {
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
@@ -25,9 +22,10 @@ namespace RimStats {
                 eventLabel : $"Death: {victimName}",
                 details: deathCause
             );
-
-            DataBaseManager.InsertData<EventData>(deathData, "Events");
-            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Colonist {victimName} death reported");
+            
+            if (DataBaseManager.InsertData<EventData>(deathData, "Events") && RimStatsMod.settings.registerEventsEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Colonist {victimName} death reported");
+            }
         }
     }
 
@@ -54,42 +52,47 @@ namespace RimStats {
                 details: $"Power: {points:F0} points. Strategy: {strategy}. Entry point: {parms.spawnCenter}"
             );
 
-            DataBaseManager.InsertData(raidEvent, "Events");
-            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Incomming raid of {factionName} event reported");
+            if ( DataBaseManager.InsertData(raidEvent, "Events") && RimStatsMod.settings.registerEventsEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Incomming raid of {factionName} event reported");
+            }
         }
     }
 
-    /*
     [HarmonyPatch(typeof(InteractionWorker_RecruitAttempt), nameof(InteractionWorker_RecruitAttempt.Interacted))]
-    public static class Patch_Rectuit {
-        public static void Prefix(Pawn recipient, out bool __state) {
-            __state = (recipient?.Faction != Faction.OfPlayer);
+    public static class Patch_Recruit
+    {
+        public static void Prefix(Pawn recipient, out bool __state)
+        {
+            __state = recipient != null && recipient.IsPrisoner;
         }
 
-        public static void Postfix(Pawn initiator, Pawn recipient, bool __state) {
+        public static void Postfix(Pawn initiator, Pawn recipient, bool __state)
+        {
             if (initiator == null || recipient == null) return;
-            if (!__state || recipient.Faction != Faction.OfPlayer) return;
 
-            int randSeed = Find.World.ConstantRandSeed;
+            bool recruitmentSuccess = __state && !recipient.IsPrisoner && recipient.Faction == Faction.OfPlayer;
+            if (!recruitmentSuccess) return;
+
+            int randSeed = Find.World.info.Seed;
             int tick = Find.TickManager.TicksGame;
 
-            string recruterName = initiator.Name.ToStringShort;
-            string newColonistName = recipient.Name.ToStringShort;
+            string recruiterName = initiator.LabelShort;
+            string newColonistName = recipient.LabelShort;
 
             EventData recruitEvent = new EventData(
-                randSeed,
-                tick,
+                randSeed: randSeed,
+                tick: tick,
                 eventType: "Recruit",
                 eventLabel: $"New colonist: {newColonistName}",
                 importance: "High",
-                details: $"Successfully recruted prisoner {newColonistName}. Interogator: {recruterName}"
+                details: $"Successfully recruited {newColonistName}. Recruiter: {recruiterName}"
             );
 
-            DataBaseManager.InsertData(recruitEvent, "Events");
-            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Recruitement of {newColonistName} reported");
+            if ( DataBaseManager.InsertData(recruitEvent, "Events") && RimStatsMod.settings.registerEventsEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Recruitment of {newColonistName} reported");
+            }
         }
     }
-    */
 
     [HarmonyPatch(typeof(Tradeable), nameof(Tradeable.ResolveTrade))]
     public static class Patch_Trade_Resolve {
@@ -112,8 +115,9 @@ namespace RimStats {
                 details: $"Trade with faction {factionName}. Place: {Find.CurrentMap?.Parent?.LabelCap ?? "Planet"}"
             );
 
-            DataBaseManager.InsertData(tradeEvent, "Events");
-            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Trade with {factionName} reported");
+            if (DataBaseManager.InsertData(tradeEvent, "Events") && RimStatsMod.settings.registerEventsEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Trade with {factionName} reported");
+            }
         }
     }
 }

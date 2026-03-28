@@ -28,7 +28,10 @@ namespace RimStats {
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
             StatsData statsData = new StatsData(randSeed, tick, factionName, wealth, colonists, timestamp);
-            DataBaseManager.InsertData(statsData, "Stats");
+
+            if (DataBaseManager.InsertData(statsData, "Stats") && RimStatsMod.settings.registerStatsEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Stats successfully inserted");
+            }
         }
     }
 }

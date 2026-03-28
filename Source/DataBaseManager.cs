@@ -83,7 +83,7 @@ namespace RimStats {
                 Initialize();
             }
             catch (Exception exception) {
-                Log.Error($"[RimStats] Databse init failed : {exception.Message}");
+                Log.Error($"{RimStatsMod.Prefix} Databse init failed : {exception.Message}");
             }
         }
 
@@ -94,10 +94,10 @@ namespace RimStats {
                 InitializeTable<EventData>("Events");
                 InitializeTable<StatsData>("Stats");
 
-                if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] Database successfully initialized");
+                if (RimStatsMod.settings.logEnabled) Log.Message($"{RimStatsMod.Prefix} Database successfully initialized");
             }
             catch (Exception exception) {
-                Log.Error($"[RimStats] Error while initializing the database. {exception.Message}");
+                Log.Error($"{RimStatsMod.Prefix} Error while initializing the database. {exception.Message}");
             }
         }
 
@@ -122,7 +122,8 @@ namespace RimStats {
             }
         }
 
-        public static void InsertData<T>(T data, string tableName) where T : BaseData {
+        public static bool InsertData<T>(T data, string tableName) where T : BaseData {
+            bool success = false;
             try {
                 // Create directory if it doesn't exist
                 if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
@@ -145,13 +146,14 @@ namespace RimStats {
                     }
 
                     command.ExecuteNonQuery();
+                    success = true;
                 }
             }
             catch (Exception exception) {
-                Log.Error($"[RimStats] Database Insert Error. {exception.Message}");
+                Log.Error($"{RimStatsMod.Prefix} Database Insert Error. {exception.Message}");
             }
 
-            if (RimStatsMod.settings.logEnabled) Log.Message("[RimStats] Data successfully inserted");
+            return success;
         }
 
         private static string GetSqlType(Type t) {
@@ -175,7 +177,7 @@ namespace RimStats {
 
             raw.SetProvider(new SQLite3Provider_e_sqlite3());
 
-            if (RimStatsMod.settings.logEnabled) Log.Message($"[RimStats] SQLite DLL successfully bound from: {binPath}");
+            if (RimStatsMod.settings.logEnabled) Log.Message($"{RimStatsMod.Prefix} SQLite DLL successfully bound from: {binPath}");
         }
     }
 
