@@ -150,7 +150,7 @@ namespace RimStats {
                 }
             }
             catch (Exception exception) {
-                Log.Error($"{RimStatsMod.Prefix} Database Insert Error. {exception.Message}");
+                Log.Error($"{RimStatsMod.Prefix} Error inserting into {tableName}. {exception.Message}");
             }
 
             return success;

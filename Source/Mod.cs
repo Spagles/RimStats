@@ -22,13 +22,13 @@ namespace RimStats {
             Listing_Standard listingStandard = new Listing_Standard();
 
             listingStandard.Begin(inRect);
-
-            listingStandard.Label($"Registration Interval Days : {settings.statsRegisterIntervalDays}");
+            
+            listingStandard.CheckboxLabeled("RimStats_StatsRegistration".Translate(), ref settings.registerStatsEnabled);
+            listingStandard.CheckboxLabeled("RimStats_EventsRegistration".Translate(), ref settings.registerEventsEnabled);
+            listingStandard.Label($"{"RimStats_RegistrationInterval".Translate()} : {settings.statsRegisterIntervalDays}");
             settings.statsRegisterIntervalDays = listingStandard.Slider(settings.statsRegisterIntervalDays, 0.1f, 5.0f);
 
-            listingStandard.CheckboxLabeled("Enable Logging", ref settings.logEnabled);
-            listingStandard.CheckboxLabeled("Enable Stats Registration", ref settings.registerStatsEnabled);
-            listingStandard.CheckboxLabeled("Enable Events Registration", ref settings.registerEventsEnabled);
+            listingStandard.CheckboxLabeled("RimStats_EnableLogging".Translate(), ref settings.logEnabled);
 
             listingStandard.End();
             base.DoSettingsWindowContents(inRect);

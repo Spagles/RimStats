@@ -16,6 +16,8 @@ namespace RimStats {
         }
 
         private void RegisterData() {
+            if (!RimStatsMod.settings.registerStatsEnabled) return;
+
             Map map = Find.AnyPlayerHomeMap;
 
             if (map == null) return;
@@ -29,8 +31,8 @@ namespace RimStats {
 
             StatsData statsData = new StatsData(randSeed, tick, factionName, wealth, colonists, timestamp);
 
-            if (DataBaseManager.InsertData(statsData, "Stats") && RimStatsMod.settings.registerStatsEnabled) {
-                Log.Message($"{RimStatsMod.Prefix} Stats successfully inserted");
+            if (DataBaseManager.InsertData(statsData, "Stats") && RimStatsMod.settings.logEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Stats data successfully registered");
             }
         }
     }

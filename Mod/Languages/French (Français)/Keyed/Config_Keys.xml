@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+    <RimStats_StatsRegistration>Activer l'enregistrement des statistiques</RimStats_StatsRegistration>
+    <RimStats_EventsRegistration>Activer l'enregistrement des événements</RimStats_EventsRegistration>
+    <RimStats_RegistrationInterval>Intervalle d'enregistrement (jours)</RimStats_RegistrationInterval>
+    <RimStats_EnableLogging>Activer le journal de débogage</RimStats_EnableLogging>
+</LanguageData>

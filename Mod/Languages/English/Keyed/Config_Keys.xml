@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<LanguageData>
+    <RimStats_StatsRegistration>Enable Stats Registration</RimStats_StatsRegistration>
+    <RimStats_EventsRegistration>Enable Events Registration</RimStats_EventsRegistration>
+    <RimStats_RegistrationInterval>Registration Data Interval (days)</RimStats_RegistrationInterval>
+    <RimStats_EnableLogging>Enable Logging</RimStats_EnableLogging>
+</LanguageData>

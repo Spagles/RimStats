@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+    <RimStats_StatsRegistration>Активировать регистрацию статистики</RimStats_StatsRegistration>
+    <RimStats_EventsRegistration>Активировать регистрацию событий</RimStats_EventsRegistration>
+    <RimStats_RegistrationInterval>Интервал записи данных (дни)</RimStats_RegistrationInterval>
+    <RimStats_EnableLogging>Активировать логирование во время записи данных</RimStats_EnableLogging>
+</LanguageData>

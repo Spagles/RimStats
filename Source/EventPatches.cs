@@ -6,6 +6,7 @@ namespace RimStats {
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Kill))]
     public static class Patch_Pawn_Kill {
         public static void Postfix(Pawn __instance) {
+            if (!RimStatsMod.settings.registerEventsEnabled) return;
             if (__instance == null || !__instance.IsColonist) return;
 
             int randSeed = Find.World.ConstantRandSeed;
@@ -22,9 +23,9 @@ namespace RimStats {
                 eventLabel : $"Death: {victimName}",
                 details: deathCause
             );
-            
-            if (DataBaseManager.InsertData<EventData>(deathData, "Events") && RimStatsMod.settings.registerEventsEnabled) {
-                Log.Message($"{RimStatsMod.Prefix} Colonist {victimName} death reported");
+
+            if (DataBaseManager.InsertData<EventData>(deathData, "Events") && RimStatsMod.settings.logEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Colonist {victimName} death registered");
             }
         }
     }
@@ -32,8 +33,9 @@ namespace RimStats {
     [HarmonyPatch(typeof(IncidentWorker_Raid), "TryExecuteWorker")]
     public static class Patch_Raid_Start {
         public static void Postfix(IncidentParms parms, bool __result) {
-            if (!__result) return;
+            if (!RimStatsMod.settings.registerEventsEnabled) return;
 
+            if (!__result) return;
             if (!(parms.target is Map)) return;
 
             int randSeed = Find.World.ConstantRandSeed;
@@ -52,8 +54,8 @@ namespace RimStats {
                 details: $"Power: {points:F0} points. Strategy: {strategy}. Entry point: {parms.spawnCenter}"
             );
 
-            if ( DataBaseManager.InsertData(raidEvent, "Events") && RimStatsMod.settings.registerEventsEnabled) {
-                Log.Message($"{RimStatsMod.Prefix} Incomming raid of {factionName} event reported");
+            if (DataBaseManager.InsertData(raidEvent, "Events") && RimStatsMod.settings.logEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Incomming raid of {factionName} event registered");
             }
         }
     }
@@ -68,6 +70,7 @@ namespace RimStats {
 
         public static void Postfix(Pawn initiator, Pawn recipient, bool __state)
         {
+            if (!RimStatsMod.settings.registerEventsEnabled) return;
             if (initiator == null || recipient == null) return;
 
             bool recruitmentSuccess = __state && !recipient.IsPrisoner && recipient.Faction == Faction.OfPlayer;
@@ -88,8 +91,8 @@ namespace RimStats {
                 details: $"Successfully recruited {newColonistName}. Recruiter: {recruiterName}"
             );
 
-            if ( DataBaseManager.InsertData(recruitEvent, "Events") && RimStatsMod.settings.registerEventsEnabled) {
-                Log.Message($"{RimStatsMod.Prefix} Recruitment of {newColonistName} reported");
+            if (DataBaseManager.InsertData(recruitEvent, "Events") && RimStatsMod.settings.logEnabled) {
+                Log.Message($"{RimStatsMod.Prefix} Recruitment of {newColonistName} registered");
             }
         }
     }
@@ -115,8 +118,8 @@ namespace RimStats {
                 details: $"Trade with faction {factionName}. Place: {Find.CurrentMap?.Parent?.LabelCap ?? "Planet"}"
             );
 
-            if (DataBaseManager.InsertData(tradeEvent, "Events") && RimStatsMod.settings.registerEventsEnabled) {
-                Log.Message($"{RimStatsMod.Prefix} Trade with {factionName} reported");
+            if (RimStatsMod.settings.registerEventsEnabled && DataBaseManager.InsertData(tradeEvent, "Events")) {
+                Log.Message($"{RimStatsMod.Prefix} Trade with {factionName} registered");
             }
         }
     }
