@@ -7,63 +7,22 @@ using SQLitePCL;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using System.Data;
+using RimWorld;
 
 // Path to database
 // /home/progme/.portproton/data/prefixes/DOTNET/drive_c/users/steamuser/AppData/LocalLow/Ludeon Studios/RimWorld by Ludeon Studios/Config/RimStats
 
 namespace RimStats {
-    public abstract class BaseData {
-        public int randSeed;
-        public int tick;
-        
-        protected BaseData(int randSeed, int tick) {
-            this.randSeed = randSeed;
-            this.tick = tick;
-        }
-
-        public Dictionary<string, object> ToDictionary() {
-            var dict = new Dictionary<string, object>();
-            FieldInfo[] fields = GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-
-            foreach (FieldInfo field in fields) {
-                dict.Add(field.Name, field.GetValue(this));
-            }
-
-            return dict;
-        }
-    }
-    public class EventData : BaseData {
-        public readonly string eventType;
-        public readonly string eventLabel;
-        public readonly string importance;
-        public readonly string details;
-
-        public EventData(int randSeed, int tick, string eventType, string importance, string eventLabel, string details) : base(randSeed, tick) {
-            this.eventLabel = eventLabel;
-            this.eventType = eventType;
-            this.importance = importance;
-            this.details = details;
-        }
-    }
-
-    public class StatsData : BaseData {
-        public readonly string factionName;
-        public readonly float wealth;
-        public readonly int colonists;
-        public readonly string timestamp;
-        public StatsData(int randSeed, int tick, string factionName, float wealth, int colonists, string timestamp) : base(randSeed, tick) {
-            this.factionName = factionName;
-            this.wealth = wealth;
-            this.colonists = colonists;
-            this.timestamp = timestamp;
-        }
-    }
-
     [StaticConstructorOnStartup]
     public static class DataBaseManager {
         public static readonly string directory = Path.Combine(GenFilePaths.ConfigFolderPath, "RimStats");
         public static readonly string path = Path.Combine(directory, "Data.db");
         public static readonly string connectionString;
+        private static readonly Dictionary<Type, string> tableRegistry = new Dictionary<Type, string> {
+            {typeof(EventData), "Events"},
+            {typeof(StatsData), "Stats"}
+        };
 
         static DataBaseManager() {
             // Create directory if it doesn't exist
@@ -91,8 +50,8 @@ namespace RimStats {
             try {
                 BindBinaires();
 
-                InitializeTable<EventData>("Events");
-                InitializeTable<StatsData>("Stats");
+                InitializeTable<EventData>();
+                InitializeTable<StatsData>();
 
                 if (RimStatsMod.settings.logEnabled) Log.Message($"{RimStatsMod.Prefix} Database successfully initialized");
             }
@@ -101,7 +60,7 @@ namespace RimStats {
             }
         }
 
-        public static void InitializeTable<T>(string tableName) where T : BaseData {
+        public static void InitializeTable<T>() where T : BaseData {
             using (SqliteConnection connection = new SqliteConnection(connectionString)) {
                 connection.Open();
                 SqliteCommand command = connection.CreateCommand();
@@ -116,13 +75,62 @@ namespace RimStats {
                     columns.Add($"{columnName} {sqlType}");   
                 }
 
-                command.CommandText = $"CREATE TABLE IF NOT EXISTS {tableName} ({string.Join(", ", columns)})";
+                command.CommandText = $"CREATE TABLE IF NOT EXISTS {tableRegistry[typeof(T)]} ({string.Join(", ", columns)})";
                 
                 command.ExecuteNonQuery();
             }
         }
 
-        public static bool InsertData<T>(T data, string tableName) where T : BaseData {
+        public static List<T> ExtractData<T>(int randSeed) where T : BaseData {
+            List<T> dataList = new List<T>();
+            
+            if (!tableRegistry.TryGetValue(typeof(T), out string tableName)) {
+                throw new KeyNotFoundException($"Type {typeof(T).Name} is not registered in tableRegistry.");
+            }
+
+            using (SqliteConnection connection = new SqliteConnection(connectionString)) {
+                connection.Open();
+
+                using (SqliteCommand command = connection.CreateCommand()) {
+                    command.CommandText = $"SELECT * FROM {tableName} WHERE randSeed = @seed ORDER BY tick ASC";
+                    command.Parameters.AddWithValue("@seed", randSeed);
+
+                    using (var reader = command.ExecuteReader()) {
+                        while (reader.Read()) {
+                            T item = MapRowToType<T>(reader);
+                            dataList.Add(item);
+                        }
+                    }
+                }
+            }
+            return dataList;
+        }
+
+        private static T MapRowToType<T>(IDataReader reader) where T : BaseData {
+            var constructor = typeof(T).GetConstructors(BindingFlags.Public | BindingFlags.Instance)[0];
+            
+            var parametersInfo = constructor.GetParameters();
+            object[] constructorArgs = new object[parametersInfo.Length];
+
+            for (int i = 0; i < parametersInfo.Length; i++) {
+                string paramName = parametersInfo[i].Name;
+                
+                int ordinal = reader.GetOrdinal(paramName);
+
+                if (ordinal != -1 && !reader.IsDBNull(ordinal)) {
+                    object rawValue = reader.GetValue(ordinal);
+                    constructorArgs[i] = Convert.ChangeType(rawValue, parametersInfo[i].ParameterType);
+                } else {
+                    constructorArgs[i] = parametersInfo[i].ParameterType.IsValueType 
+                                        ? Activator.CreateInstance(parametersInfo[i].ParameterType) 
+                                        : null;
+                }
+            }
+            
+            return (T)constructor.Invoke(constructorArgs);
+        }
+
+        public static bool InsertData<T>(T data) where T : BaseData {
             bool success = false;
             try {
                 // Create directory if it doesn't exist
@@ -138,7 +146,7 @@ namespace RimStats {
                     string values = string.Join(", ", dataDict.Keys.Select(k => "$" + k));
 
                     // Add text to command
-                    command.CommandText = $"INSERT INTO {tableName} ({columns}) VALUES ({values})";
+                    command.CommandText = $"INSERT INTO {tableRegistry[typeof(T)]} ({columns}) VALUES ({values})";
 
                     // Anti-SQL injection
                     foreach (var entry in dataDict) {
@@ -150,7 +158,7 @@ namespace RimStats {
                 }
             }
             catch (Exception exception) {
-                Log.Error($"{RimStatsMod.Prefix} Error inserting into {tableName}. {exception.Message}");
+                Log.Error($"{RimStatsMod.Prefix} Error inserting into {tableRegistry[typeof(T)]}. {exception.Message}");
             }
 
             return success;

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Defs>
+    <HistoryAutoRecorderGroupDef>
+        <defName>RimStats_WealthPerColonistGroup</defName>
+        <label>Wealth per colonist</label>
+        <description>Economic efficiency analysis.</description>
+        <integersOnly>false</integersOnly>
+    </HistoryAutoRecorderGroupDef>
+</Defs>

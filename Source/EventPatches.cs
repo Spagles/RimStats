@@ -24,7 +24,7 @@ namespace RimStats {
                 details: deathCause
             );
 
-            if (DataBaseManager.InsertData<EventData>(deathData, "Events") && RimStatsMod.settings.logEnabled) {
+            if (DataBaseManager.InsertData<EventData>(deathData) && RimStatsMod.settings.logEnabled) {
                 Log.Message($"{RimStatsMod.Prefix} Colonist {victimName} death registered");
             }
         }
@@ -54,7 +54,7 @@ namespace RimStats {
                 details: $"Power: {points:F0} points. Strategy: {strategy}. Entry point: {parms.spawnCenter}"
             );
 
-            if (DataBaseManager.InsertData(raidEvent, "Events") && RimStatsMod.settings.logEnabled) {
+            if (DataBaseManager.InsertData(raidEvent) && RimStatsMod.settings.logEnabled) {
                 Log.Message($"{RimStatsMod.Prefix} Incomming raid of {factionName} event registered");
             }
         }
@@ -91,7 +91,7 @@ namespace RimStats {
                 details: $"Successfully recruited {newColonistName}. Recruiter: {recruiterName}"
             );
 
-            if (DataBaseManager.InsertData(recruitEvent, "Events") && RimStatsMod.settings.logEnabled) {
+            if (DataBaseManager.InsertData(recruitEvent) && RimStatsMod.settings.logEnabled) {
                 Log.Message($"{RimStatsMod.Prefix} Recruitment of {newColonistName} registered");
             }
         }
@@ -118,7 +118,7 @@ namespace RimStats {
                 details: $"Trade with faction {factionName}. Place: {Find.CurrentMap?.Parent?.LabelCap ?? "Planet"}"
             );
 
-            if (RimStatsMod.settings.registerEventsEnabled && DataBaseManager.InsertData(tradeEvent, "Events")) {
+            if (RimStatsMod.settings.registerEventsEnabled && DataBaseManager.InsertData(tradeEvent)) {
                 Log.Message($"{RimStatsMod.Prefix} Trade with {factionName} registered");
             }
         }

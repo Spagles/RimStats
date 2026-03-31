@@ -31,7 +31,7 @@ namespace RimStats {
 
             StatsData statsData = new StatsData(randSeed, tick, factionName, wealth, colonists, timestamp);
 
-            if (DataBaseManager.InsertData(statsData, "Stats") && RimStatsMod.settings.logEnabled) {
+            if (DataBaseManager.InsertData(statsData) && RimStatsMod.settings.logEnabled) {
                 Log.Message($"{RimStatsMod.Prefix} Stats data successfully registered");
             }
         }
