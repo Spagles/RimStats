@@ -25,13 +25,15 @@ namespace RimStats {
             int randSeed = Find.World.ConstantRandSeed;
             string factionName = Faction.OfPlayer.Name;
             float wealth = map.wealthWatcher.WealthTotal;
+            float wealthBuildings = map.wealthWatcher.WealthBuildings;
+            float wealthItems = map.wealthWatcher.WealthItems;
             int colonists = map.mapPawns.ColonistCount;
             int tick = Find.TickManager.TicksGame;
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            StatsData statsData = new StatsData(randSeed, tick, factionName, wealth, colonists, timestamp);
+            StatsData statsData = new StatsData(randSeed, tick, factionName, wealth, wealthItems, wealthBuildings, colonists, timestamp);
 
-            if (DataBaseManager.InsertData(statsData) && RimStatsMod.settings.logEnabled) {
+            if (DatabaseManager.InsertData(statsData) && RimStatsMod.settings.logEnabled) {
                 Log.Message($"{RimStatsMod.Prefix} Stats data successfully registered");
             }
         }

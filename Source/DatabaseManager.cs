@@ -15,7 +15,7 @@ using RimWorld;
 
 namespace RimStats {
     [StaticConstructorOnStartup]
-    public static class DataBaseManager {
+    public static class DatabaseManager {
         public static readonly string directory = Path.Combine(GenFilePaths.ConfigFolderPath, "RimStats");
         public static readonly string path = Path.Combine(directory, "Data.db");
         public static readonly string connectionString;
@@ -24,7 +24,7 @@ namespace RimStats {
             {typeof(StatsData), "Stats"}
         };
 
-        static DataBaseManager() {
+        static DatabaseManager() {
             // Create directory if it doesn't exist
             if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 

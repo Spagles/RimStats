@@ -2,37 +2,90 @@ using Verse;
 using System.Linq;
 using RimWorld.Planet;
 using System.Collections.Generic;
+using RimWorld;
+using System.Reflection;
+using System; // Для Convert
 
 namespace RimStats {
     public class UIWorldComponent : WorldComponent {
         public UIWorldComponent(World world) : base(world) {}
 
-        private void DrawGraph()
+        public override void FinalizeInit(bool fromLoad)
         {
-            var group = Current.Game.history.Groups().FirstOrDefault(x => x.def.defName == "RimStats_WealthPerColonistGroup");
-            if (group == null || group.recorders.Count == 0) return;
+            base.FinalizeInit(fromLoad);
 
-            var recorder = group.recorders[0];
-            recorder.records.Clear();
-
-            List<StatsData> rawData = DataBaseManager.ExtractData<StatsData>(Find.World.ConstantRandSeed);
-
-            List<float> data = GetWealthPerColonist(rawData);
-
-            if (data == null || data.Count == 0) return;
-            recorder.records.AddRange(data);
+            CreateGraphs();
+            UpdateGraphs(); 
         }
 
-        private List<float> GetWealthPerColonist(List<StatsData> rawData) {
-            List<float> data = new List<float>();
+        private void CreateGraphs()
+        {
+            var groupDef = DefDatabase<HistoryAutoRecorderGroupDef>.GetNamed("RimStats_WealthPerColonistGroup", false);
+            if (groupDef == null) return;
+            groupDef.label = groupDef.label.Translate();
 
-            foreach (StatsData record in rawData) {
-                float value = record.colonists > 0 ? record.wealth / record.colonists : 0f;
-                data.Add(value);
+            if (Current.Game.history.Groups().Any(x => x.def == groupDef)) return;
+
+            HistoryAutoRecorderGroup newGroup = new HistoryAutoRecorderGroup { def = groupDef };
+
+            var myRecorders = DefDatabase<HistoryAutoRecorderDef>.AllDefsListForReading
+                                .Where(d => d is RimStats_HistoryAutoRecorderDef)
+                                .Cast<RimStats_HistoryAutoRecorderDef>() // Приводим к нашему типу
+                                .ToList();
+
+            foreach (var recDef in myRecorders) {
+                if (!recDef.label.NullOrEmpty()) {
+                    recDef.label = recDef.label.Translate();
+                }
+
+                newGroup.recorders.Add(new HistoryAutoRecorder {
+                    def = recDef,
+                    records = new List<float>()
+                });
             }
 
-            return data;
+            Current.Game.history.Groups().Add(newGroup);
         }
 
+        public void UpdateGraphs()
+        {
+            int worldSeed = Find.World.ConstantRandSeed; 
+            List<StatsData> data = DatabaseManager.ExtractData<StatsData>(worldSeed);
+            
+            if (data == null || data.Count == 0) {
+                Log.Warning("[RimStats] Данные в базе не найдены для seed: " + worldSeed);
+                return;
+            }
+
+            var group = Current.Game.history.Groups().FirstOrDefault(x => x.def.defName == "RimStats_WealthPerColonistGroup");
+            if (group == null) return;
+
+            foreach (var recorder in group.recorders) {
+                if (recorder.def is RimStats_HistoryAutoRecorderDef def) {
+                    // Reflection: Поле должно быть public в классе StatsData!
+                    FieldInfo fieldInfo = typeof(StatsData).GetField(def.dataFieldName);
+                    
+                    if (fieldInfo == null) {
+                        Log.Error($"[RimStats] Поле {def.dataFieldName} не найдено в StatsData!");
+                        continue;
+                    }
+
+                    recorder.records.Clear();
+                    foreach (var dataRow in data) {
+                        // Используем Convert для безопасности типов (float/double)
+                        float rawValue = Convert.ToSingle(fieldInfo.GetValue(dataRow));
+                        float perColonist = dataRow.colonists > 0 ? rawValue / dataRow.colonists : 0f;
+                        
+                        recorder.records.Add(perColonist);
+                    }
+                }
+            }
+        }
+
+        public override void WorldComponentTick()
+        {
+            base.WorldComponentTick();
+            if (Find.TickManager.TicksGame % 30000 == 0) UpdateGraphs();
+        }
     }
 }

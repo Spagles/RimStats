@@ -41,14 +41,18 @@ namespace RimStats {
     public class StatsData : BaseData {
         public readonly string factionName;
         public readonly float wealth;
+        public readonly float wealthItems;
+        public readonly float wealthBuildings;
         public readonly int colonists;
         public readonly string timestamp;
 
-        public StatsData(int randSeed, int tick, string factionName, float wealth, int colonists, string timestamp) : base(randSeed, tick) {
+        public StatsData(int randSeed, int tick, string factionName, float wealth, float wealthItems, float wealthBuildings, int colonists, string timestamp) : base(randSeed, tick) {
             this.factionName = factionName;
             this.wealth = wealth;
             this.colonists = colonists;
             this.timestamp = timestamp;
+            this.wealthItems = wealthItems;
+            this.wealthBuildings = wealthBuildings;
         }
     }
 }
