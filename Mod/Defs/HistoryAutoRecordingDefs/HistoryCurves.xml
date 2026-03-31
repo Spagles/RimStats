@@ -1,10 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <Defs>
-    <HistoryAutoRecorderGroupDef>
-        <defName>RimStats_WealthPerColonistGroup</defName>
-        <label>Wealth per colonist</label>
-        <description>Economic efficiency analysis.</description>
-        <integersOnly>false</integersOnly>
-    </HistoryAutoRecorderGroupDef>
+    <HistoryAutoRecorderDef Class="RimStats.RimStats_HistoryAutoRecorderDef">
+        <defName>RimStats_TotalWealthPerColonist</defName>
+        <label>RimStats_Graph_WealthTotal</label>
+        <graphColor>(0.9, 0.7, 0.2)</graphColor>
+        <valueFormat>F0</valueFormat>
+        <dataFieldName>wealth</dataFieldName>
+        <workerClass>RimStats.HistoryAutoRecorderWorker_Manual</workerClass>
+    </HistoryAutoRecorderDef>
+
+    <HistoryAutoRecorderDef Class="RimStats.RimStats_HistoryAutoRecorderDef">
+        <defName>RimStats_ItemsWealthPerColonist</defName>
+        <label>RimStats_Graph_WealthItems</label>
+        <graphColor>(0.85, 0.8, 0.4)</graphColor>
+        <valueFormat>F0</valueFormat>
+        <dataFieldName>wealthItems</dataFieldName>
+        <workerClass>RimStats.HistoryAutoRecorderWorker_Manual</workerClass>
+    </HistoryAutoRecorderDef>
+
+    <HistoryAutoRecorderDef Class="RimStats.RimStats_HistoryAutoRecorderDef">
+        <defName>RimStats_BuildingsWealthPerColonist</defName>
+        <label>RimStats_Graph_WealthBuildings</label>
+        <graphColor>(1.0, 0.6, 0.1)</graphColor>
+        <valueFormat>F0</valueFormat>
+        <workerClass>RimStats.HistoryAutoRecorderWorker_Manual</workerClass>
+        <dataFieldName>wealthBuildings</dataFieldName>
+    </HistoryAutoRecorderDef>
 </Defs>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <RimStats_WealthPerColonistGroup>Richesse par colon</RimStats_WealthPerColonistGroup>
+
+    <RimStats_Graph_WealthTotal>Richesse totale</RimStats_Graph_WealthTotal>
+    <RimStats_Graph_WealthItems>Richesse (objets)</RimStats_Graph_WealthItems>
+    <RimStats_Graph_WealthBuildings>Richesse (bâtiments)</RimStats_Graph_WealthBuildings>
+</LanguageData>

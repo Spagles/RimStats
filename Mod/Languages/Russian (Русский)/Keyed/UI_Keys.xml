@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <RimStats_WealthPerColonistGroup>Богатство на колониста</RimStats_WealthPerColonistGroup>
+
+    <RimStats_Graph_WealthTotal>Общее богатство</RimStats_Graph_WealthTotal>
+    <RimStats_Graph_WealthItems>Богатство (предметы)</RimStats_Graph_WealthItems>
+    <RimStats_Graph_WealthBuildings>Богатство (постройки)</RimStats_Graph_WealthBuildings>
+</LanguageData>
