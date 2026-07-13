@@ -9,7 +9,7 @@ namespace RimStats {
             if (!RimStatsMod.settings.registerEventsEnabled) return;
             if (__instance == null || !__instance.IsColonist) return;
 
-            int randSeed = Find.World.ConstantRandSeed;
+            int randSeed = Find.World.info.Seed;
             int tick = Find.TickManager.TicksGame;
 
             string victimName = __instance.LabelShort;

@@ -1,53 +1,39 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    
-    <!--
-    <GamePath Condition="'$(RIMWORLD_PATH)' != ''">$(RIMWORLD_PATH)</GamePath>
-    <GamePath Condition="'$(RIMWORLD_PATH)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</GamePath>
-    -->
-    <GamePath>/mnt/win_c/Program Files (x86)/Steam/steamapps/common/RimWorld</GamePath>
-
     <OutputType>Library</OutputType>
-    <OutputPath>$(ProjectDir)../Mod/Assemblies</OutputPath>
-
+    
+    <!-- Define base paths for build organization relative to the project directory -->
+    <ModDir>$(ProjectDir)../Mod</ModDir>
     <AssembliesPath>$(ProjectDir)../Mod/Assemblies</AssembliesPath>
-    <BinPath>$(ProjectDir)../Mod/Bin</BinPath>
+    
+    <!-- Output directory dynamically set based on build configuration (Debug/Release) -->
+    <OutputPath>$(ProjectDir)../Builds/$(Configuration)</OutputPath>
+    <BinPath>$(ModDir)/Bin</BinPath>
 
+    <!-- Ensure NuGet dependencies are copied locally -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- References to local game engine libraries (not copied to output) -->
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(GamePath)/RimWorldWin64_Data/Managed/Assembly-CSharp.dll</HintPath>
+      <HintPath>$(AssembliesPath)/Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(GamePath)/RimWorldWin64_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(AssembliesPath)/UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>$(GamePath)/Mods/2009463077/Current/Assemblies/0Harmony.dll</HintPath>
+      <HintPath>$(AssembliesPath)/0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    
+    <!-- NuGet package for SQLite database support -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.0" />
   </ItemGroup>
-
-  <Target Name="DeployAssemblies" AfterTargets="Build">
-    <ItemGroup>
-      <SqliteLibs Include="$(AssembliesPath)/e_sqlite3.dll; $(AssembliesPath)/libe_sqlite3.so; $(AssembliesPath)/libe_sqlite3.dylib" />
-    </ItemGroup>
-
-    <Copy
-      SourceFiles="@(SqliteLibs)"
-      DestinationFolder="$(BinPath)"
-      Condition="Exists('%(FullPath)')"
-      OverwriteReadOnlyFiles="true" />
-
-    <Delete 
-      Files="@(SqliteLibs)" 
-      Condition="Exists('%(FullPath)') AND Exists('$(BinPath)/%(Filename)%(Extension)')" />
-  </Target>
+  
 </Project>

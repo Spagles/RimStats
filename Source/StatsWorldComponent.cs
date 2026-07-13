@@ -22,7 +22,7 @@ namespace RimStats {
 
             if (map == null) return;
 
-            int randSeed = Find.World.ConstantRandSeed;
+            int randSeed = Find.World.info.Seed;;
             string factionName = Faction.OfPlayer.Name;
             float wealth = map.wealthWatcher.WealthTotal;
             float wealthBuildings = map.wealthWatcher.WealthBuildings;

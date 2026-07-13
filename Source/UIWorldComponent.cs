@@ -4,7 +4,7 @@ using RimWorld.Planet;
 using System.Collections.Generic;
 using RimWorld;
 using System.Reflection;
-using System; // Для Convert
+using System;
 
 namespace RimStats {
     public class UIWorldComponent : WorldComponent {
@@ -49,11 +49,11 @@ namespace RimStats {
 
         public void UpdateGraphs()
         {
-            int worldSeed = Find.World.ConstantRandSeed; 
+            int worldSeed = Find.World.info.Seed; 
             List<StatsData> data = DatabaseManager.ExtractData<StatsData>(worldSeed);
             
             if (data == null || data.Count == 0) {
-                Log.Warning("[RimStats] Данные в базе не найдены для seed: " + worldSeed);
+                Log.Warning("[RimStats] Data inside of data base were not found for this seed: " + worldSeed);
                 return;
             }
 
@@ -62,17 +62,15 @@ namespace RimStats {
 
             foreach (var recorder in group.recorders) {
                 if (recorder.def is RimStats_HistoryAutoRecorderDef def) {
-                    // Reflection: Поле должно быть public в классе StatsData!
                     FieldInfo fieldInfo = typeof(StatsData).GetField(def.dataFieldName);
                     
                     if (fieldInfo == null) {
-                        Log.Error($"[RimStats] Поле {def.dataFieldName} не найдено в StatsData!");
+                        Log.Error($"[RimStats] The field {def.dataFieldName} not found in StatsData!");
                         continue;
                     }
 
                     recorder.records.Clear();
                     foreach (var dataRow in data) {
-                        // Используем Convert для безопасности типов (float/double)
                         float rawValue = Convert.ToSingle(fieldInfo.GetValue(dataRow));
                         float perColonist = dataRow.colonists > 0 ? rawValue / dataRow.colonists : 0f;
                         
